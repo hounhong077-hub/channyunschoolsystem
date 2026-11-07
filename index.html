@@ -1,22 +1,143 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2299.77">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f5f6fa;
+    color: #222;
+  }
+
+  /* ---- Landing / selection screen ---- */
+  #landing {
+    max-width: 640px;
+    margin: 80px auto;
+    padding: 40px 32px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.08);
+    text-align: center;
+  }
+  #landing h1 { margin-top: 0; font-size: 1.8rem; }
+  #landing p  { color: #666; line-height: 1.6; }
+  #openBtn {
+    margin-top: 24px;
+    padding: 14px 36px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #1a73e8;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  #openBtn:hover { background: #1660c4; }
+
+  /* ---- Dashboard screen (iframe) ---- */
+  #dashboard {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #f5f6fa;
+    z-index: 1000;
+  }
+  #dashboard.active { display: flex; flex-direction: column; }
+
+  #dashHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  #dashHeader h2 { margin: 0; font-size: 1.1rem; }
+  #backBtn {
+    padding: 8px 18px;
+    font-size: .9rem;
+    background: #eee;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #backBtn:hover { background: #ddd; }
+
+  #appFrame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: #fff;
+  }
+</style>
 </head>
 <body>
-<p class="p1">&lt;iframe<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>src="https://script.google.com/macros/s/AKfycbxBYlQUJfK3DF0jdFRBA5lWBHK0ryPx3fWHVUJkfh4/exec"</p>
-<p class="p1"><span class="Apple-converted-space">  </span>width="100%"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>height="800"<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>frameborder="0"</p>
-<p class="p1"><span class="Apple-converted-space">  </span>style="border: none;"&gt;</p>
-<p class="p1">&lt;/iframe&gt;</p>
+
+  <!-- ================= Landing screen ================= -->
+  <section id="landing">
+    <h1>Welcome</h1>
+    <p>Select an option below to open your dashboard.</p>
+    <button id="openBtn" type="button">Open Dashboard</button>
+  </section>
+
+  <!-- ================= Dashboard screen ================= -->
+  <section id="dashboard" aria-hidden="true">
+    <div id="dashHeader">
+      <h2>Dashboard</h2>
+      <button id="backBtn" type="button">← Back</button>
+    </div>
+    <!-- The iframe src is set by JavaScript, only when the user selects -->
+    <iframe id="appFrame" title="Dashboard"></iframe>
+  </section>
+
+<script>
+  // ---- Your deployed Apps Script /exec URL ----
+  const APP_URL = "https://script.google.com/macros/s/AKfycbyGE1k0CWBfOxEUeI6_aXyzDxlcCauIFrbT3s6MfQtrxh8JBZsRCa-NJFMkhBfM0FtO/exec";
+
+  const landing   = document.getElementById("landing");
+  const dashboard = document.getElementById("dashboard");
+  const frame     = document.getElementById("appFrame");
+  const openBtn   = document.getElementById("openBtn");
+  const backBtn   = document.getElementById("backBtn");
+
+  openBtn.addEventListener("click", () => {
+    // Load the Apps Script app only when the user chooses
+    if (!frame.src) {
+      frame.src = APP_URL;
+    }
+    landing.style.display = "none";
+    dashboard.classList.add("active");
+    dashboard.setAttribute("aria-hidden", "false");
+    // Optional: update URL hash so refresh stays on dashboard
+    history.pushState({ view: "dashboard" }, "", "#dashboard");
+  });
+
+  backBtn.addEventListener("click", () => {
+    dashboard.classList.remove("active");
+    dashboard.setAttribute("aria-hidden", "true");
+    landing.style.display = "";
+    history.pushState({ view: "landing" }, "", "#");
+  });
+
+  // Handle browser back/forward buttons
+  window.addEventListener("popstate", (e) => {
+    if (e.state && e.state.view === "dashboard") {
+      openBtn.click();
+    } else {
+      dashboard.classList.remove("active");
+      landing.style.display = "";
+    }
+  });
+
+  // If the page was opened directly with #dashboard, show it
+  if (location.hash === "#dashboard") {
+    openBtn.click();
+  }
+</script>
 </body>
 </html>
